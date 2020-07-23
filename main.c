@@ -5,22 +5,20 @@ int main(void)
   metric_init();
   metric_register_new("tenants_running_query", "number of tenants running queries", GAUGE, NULL, 0);
   metric_register_new("csqls_running_query", "number of cloud sql instances running queries", GAUGE, NULL, 0);
-  metric_register_new("allocations_per_service", "number of cloud sql instances running queries", GAUGE, NULL, 1);
+  const char *allocation_labels[] = {"service"};
+  metric_register_new("allocations_per_service", "number of allocations per service", GAUGE, allocation_labels, 1);
   const char *req_labels[] = {"code", "method"};
-  metric_register_new("requests", "number of cloud sql instances running queries", GAUGE, req_labels, 2);
+  metric_register_new("requests", "requests per code", GAUGE, req_labels, 2);
   metric_inc("csqls_running_query", 30.0f);
-  metric_label_t **labels = xmalloc(sizeof(metric_label_t *));
-  labels[0] = xmalloc(sizeof(metric_label_t));
-  labels[0]->label = "service";
-  labels[0]->value = "my-service";
-  metric_inc_labeled("allocations_per_service", labels, 40);
-  metric_inc_labeled("allocations_per_service", labels, 30);
-  labels = xmalloc(sizeof(metric_label_t *));
-  labels[0] = xmalloc(sizeof(metric_label_t));
-  labels[0]->label = "service";
-  labels[0]->value = "service-2";
-  metric_inc_labeled("allocations_per_service", labels, 18);
-  metric_set_labeled("allocations_per_service", labels, 28);
+  // Since user is responsible to free the memory allocated with method ``with_labels()'' this is not
+  // the best way of loosing the pointer
+  metric_inc_labeled("allocations_per_service", with_labels(1, "service", "my-service-1"), 40);
+  metric_inc_labeled("allocations_per_service", with_labels(1, "service", "my-service-1"), 30);
+  metric_inc_labeled("allocations_per_service", with_labels(1, "service", "my-service-2"), 18);
+  metric_set_labeled("allocations_per_service", with_labels(1, "service", "my-service-2"), 28);
+  metric_set_labeled("requests", with_labels(2, "code", "200", "method", "get"), 280);
+  metric_set_labeled("requests", with_labels(2, "code", "400", "method", "get"), 180);
+  metric_set_labeled("requests", with_labels(2, "code", "500", "method", "get"), 80);
   metric_print(stderr);
   //metric_release_all();
   return 0;

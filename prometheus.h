@@ -57,6 +57,11 @@ typedef struct {
    * Number of labels, can't be changed after registration. 
    */
   size_t _label_no;
+
+  /**
+   * For labeled metrics, check for labels provided. Store on definition here or NULL for scalar metrics 
+   */
+  const char **_labels;
 } metric_t; 
 
 /**
@@ -71,6 +76,7 @@ void metric_release(const char *name);
 void metric_release_all(void);
 void metric_init(void);
 void metric_print(FILE *fp);
+metric_label_t **with_labels(size_t label_no, ...) ;
 
 #define MAX_METRICS 100
 typedef struct {
@@ -78,6 +84,4 @@ typedef struct {
   size_t current_top;
 }  _metric_internal_holder_t;
 
-#define EPS 0.001f
-#define abs(x) fabs(x)
 #endif /* __PROMETHEUS_API_H__ */

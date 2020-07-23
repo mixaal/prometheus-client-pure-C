@@ -20,6 +20,10 @@ void metric_register_new(const char *name, const char *help, metric_type_t mtype
      error("max metrics capacity exahusted");
      return;
   }
+  if(label_no > 0 && labels == NULL) {
+     error("label number > 0 and labels provided as NULL");
+     return;
+  }
   metric_t *m = xmalloc(sizeof(*m));
   holder.array[holder.current_top] = m;
   holder.current_top ++;
@@ -29,6 +33,7 @@ void metric_register_new(const char *name, const char *help, metric_type_t mtype
   m -> _value_holders = NULL;
   m -> _label_no = label_no;
   m -> _value = PROM_VALZERO;
+  m -> _labels = labels;
 }
 
 static metric_t *find_metric(const char *name)
@@ -75,6 +80,21 @@ static metric_label_value_combination_t *_find_metric_value_combination(metric_l
    return NULL;
 }
 
+static _Bool _check_provided_labels(metric_t *m, metric_label_t **labels)
+{
+  if( m == NULL || m->_labels == NULL) {
+    error("metric is NULL or metric labels is NULL - nothing to check");
+    return 0;
+  }
+  for(int i=0; i<m->_label_no; i++) {
+    if(strcmp(m -> _labels[i], labels[i]->label)) {
+      error("labels mismatch");
+      return 0;
+    }
+  }
+  return 1;
+}
+
 void metric_set_labeled(const char *name, metric_label_t **labels, PROM_VALTYPE amount)
 {
    metric_t *m = find_metric(name);
@@ -88,6 +108,10 @@ void metric_set_labeled(const char *name, metric_label_t **labels, PROM_VALTYPE 
   } 
   if(m -> type == COUNTER ) {
     error("counter value can't be set - use gauge type instead");
+    return;
+  }
+  if(!_check_provided_labels(m, labels)) {
+    error("check for provided labels mismatch with the definition, note that label order matters");
     return;
   }
   metric_label_value_combination_t *lvc = _find_metric_value_combination(labels, m);
@@ -125,6 +149,11 @@ void metric_inc_labeled(const char *name, metric_label_t **labels, PROM_VALTYPE 
   } 
   if(m -> type == COUNTER && amount < 0) {
     error("counter value can't be decreased - use gauge type instead");
+    return;
+  }
+
+  if(!_check_provided_labels(m, labels)) {
+    error("check for provided labels mismatch with the definition, note that label order matters");
     return;
   }
   metric_label_value_combination_t *lvc = _find_metric_value_combination(labels, m);
@@ -224,4 +253,18 @@ void metric_print(FILE *fp)
     metric_t *m = holder.array[i];
     _metric_print(fp, m);
   }
+}
+
+metric_label_t **with_labels(size_t label_no, ...) 
+{
+  va_list ap;
+  metric_label_t **labels = xmalloc(label_no * sizeof(metric_label_t *));
+  va_start(ap, label_no);
+  for(int i=0; i<label_no; i++) {
+    labels[i] = xmalloc(sizeof(metric_label_t));
+    labels[i]->label = va_arg(ap, char *);
+    labels[i]->value = va_arg(ap, char *);
+  }
+  va_end(ap);
+  return labels;
 }
