@@ -14,7 +14,7 @@ typedef enum { GAUGE, COUNTER } metric_type_t;
  */
 typedef struct {
   const char *label;
-  PROM_VALTYPE value;
+  const char *value;
 } metric_label_t;
 
 /**

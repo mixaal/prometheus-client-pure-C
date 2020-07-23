@@ -47,7 +47,7 @@ static _Bool _is_label_value(metric_label_value_combination_t *lvc, metric_label
    for(int i=0; i<label_no; i++) {
      metric_label_t *lv1 = lvc->label_values[i];
      metric_label_t *lv2 = label_values[i];
-     if(strcmp(lv1->label, lv2->label) || (abs(lv1->value-lv2->value)>EPS)) {
+     if(strcmp(lv1->label, lv2->label) || strcmp(lv1->value, lv2->value)) {
         return 0;
      }
    }
@@ -161,18 +161,19 @@ static void _metric_print(FILE *fp, metric_t *m)
 {
   if(fp==NULL || m==NULL) return;
 
-  fprintf(fp, "# HELP %s %s\n", m -> name, m -> help);
-  fprintf(fp, "# TYPE %s %s\n", m -> name, get_type_name(m -> type));
+  metric_label_value_combination_t *llist = m -> _value_holders;
+  if(llist!=NULL || m -> _label_no ==0) {
+    fprintf(fp, "# HELP %s %s\n", m -> name, m -> help);
+    fprintf(fp, "# TYPE %s %s\n", m -> name, get_type_name(m -> type));
+  }
   if( m -> _label_no == 0 ) {
     fprintf(fp, "%s %0.2f\n", m -> name, m -> _value);
   } else {
-    metric_label_value_combination_t *llist = m -> _value_holders;
     while( llist != NULL ) {
       fprintf(fp, "%s{", m -> name);
       for(int i=0; i<m -> _label_no; i++) {
          metric_label_t *lv = llist->label_values[i];
-         fprintf(fp, "%s=%f", lv -> label, lv -> value);
-         if(i!=m -> _label_no-1) fprintf(fp, ",");
+         fprintf(fp, "%s=\"%s\",", lv -> label, lv -> value);
       }
       fprintf(fp, "} %f\n", llist -> value );
       llist = llist -> next;
