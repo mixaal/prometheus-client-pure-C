@@ -75,6 +75,43 @@ static metric_label_value_combination_t *_find_metric_value_combination(metric_l
    return NULL;
 }
 
+void metric_set_labeled(const char *name, metric_label_t **labels, PROM_VALTYPE amount)
+{
+   metric_t *m = find_metric(name);
+  if(m==NULL) {
+    error("can't find metric");
+    return;
+  }
+  if(m -> _label_no == 0) {
+    error("scalar-based metric, use non-label API instead!");
+    return;
+  } 
+  if(m -> type == COUNTER ) {
+    error("counter value can't be set - use gauge type instead");
+    return;
+  }
+  metric_label_value_combination_t *lvc = _find_metric_value_combination(labels, m);
+  if(lvc!=NULL) {
+    lvc -> value = amount;
+  } else {
+    // Need to create a new combination
+    lvc = xmalloc(sizeof(metric_label_value_combination_t));
+    lvc -> value = amount;
+    lvc -> next = NULL;
+    lvc -> label_values = labels;
+    if ( m -> _value_holders == NULL ) {
+      // this means we didn't have any labeled holders yet, this one is the first one.
+      m -> _value_holders = lvc;
+    } else {
+      // In this case we want to find the last one:
+      metric_label_value_combination_t *llist = m -> _value_holders;
+      while ( llist -> next != NULL) llist = llist -> next;
+      llist -> next = lvc;
+    }
+  }
+}
+
+
 void metric_inc_labeled(const char *name, metric_label_t **labels, PROM_VALTYPE amount)
 {
    metric_t *m = find_metric(name);

@@ -20,6 +20,7 @@ int main(void)
   labels[0]->label = "service";
   labels[0]->value = "service-2";
   metric_inc_labeled("allocations_per_service", labels, 18);
+  metric_set_labeled("allocations_per_service", labels, 28);
   metric_print(stderr);
   //metric_release_all();
   return 0;

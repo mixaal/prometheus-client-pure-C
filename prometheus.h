@@ -66,6 +66,7 @@ void metric_register_new(const char *name, const char *help, metric_type_t mtype
 void metric_inc(const char *name, PROM_VALTYPE value);
 void metric_set(const char *name, PROM_VALTYPE value);
 void metric_inc_labeled(const char *name, metric_label_t **labels, PROM_VALTYPE value);
+void metric_set_labeled(const char *name, metric_label_t **labels, PROM_VALTYPE value);
 void metric_release(const char *name);
 void metric_release_all(void);
 void metric_init(void);
