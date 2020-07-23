@@ -3,6 +3,11 @@
 This is a simple prometheus metrics exporter for pure C projects that are not allowed to use bigger
 libraries taking care of prometheus due to licensing issues.
 
+## Latest Build
+
+[![Build Status](https://travis-ci.com/mixaal/prometheus-exporter-pure-C.svg?branch=master)](https://travis-ci.com/mixaal/prometheus-exporter-pure-C)
+
+
 
 ## Quickstart
 
