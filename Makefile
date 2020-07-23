@@ -12,6 +12,9 @@ all: $(PROG)
 $(PROG): $(OBJECTS)
 	$(CC) -o $(PROG) $(OBJECTS) $(LIBS)
 
+test: $(PROG) 
+	./$(PROG)
+
 clean:
 	$(RM) $(OBJECTS) main
 
