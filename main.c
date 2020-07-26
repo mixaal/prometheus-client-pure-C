@@ -19,7 +19,18 @@ int main(void)
   metric_set_labeled("requests", with_labels(2, "code", "200", "method", "get"), 280);
   metric_set_labeled("requests", with_labels(2, "code", "400", "method", "get"), 180);
   metric_set_labeled("requests", with_labels(2, "code", "500", "method", "get"), 80);
-  metric_print(stderr);
+  metric_print(stdout);
+#ifdef _START_METRICS_SERVER
+  metrics_server_t * server = server_create(2000);
+  if(server == NULL) {
+    exit(EXIT_FAILURE);
+  }
+  for(;;) {
+    int conn_fd = server_accept(server);
+    server_write_metrics(conn_fd);
+  }
+#endif /* _START_METRICS_SERVER */  
   //metric_release_all();
-  return 0;
+
+  return EXIT_SUCCESS;
 }
