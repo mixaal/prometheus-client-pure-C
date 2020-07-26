@@ -5,6 +5,8 @@ libraries taking care of prometheus due to licensing issues.
 
 ## Latest Build
 
+ * Includes the prometheus download and running the `promtool check metrics` to ensure that metrics we are creating are compliant with prometheus scaper.
+
 [![Build Status](https://travis-ci.com/mixaal/prometheus-exporter-pure-C.svg?branch=master)](https://travis-ci.com/mixaal/prometheus-exporter-pure-C)
 
 
